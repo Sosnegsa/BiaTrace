@@ -1,0 +1,44 @@
+name: Deploy Pages (dev + prod)
+
+on:
+  push:
+    branches: [ main, dev ]
+    paths:
+      - 'pages/**'
+      - '.github/workflows/pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Validaciones rápidas (opcional)
+      - name: Listar contenido
+        run: |
+          echo "Contenido pages/"
+          tree -a pages || true
+
+      # Empaquetar pages/ como artefacto para Pages
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: pages
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

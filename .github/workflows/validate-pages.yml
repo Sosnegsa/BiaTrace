@@ -1,0 +1,28 @@
+name: Validate Pages
+
+on:
+  pull_request:
+    branches: [ dev, main ]
+    paths:
+      - 'pages/**'
+
+jobs:
+  htmlhint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install htmlhint
+        run: npm i -g htmlhint
+      - name: Run HTMLHint
+        run: htmlhint "pages/**/*.html" || true
+
+  link-checker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Lychee link checker
+        uses: lycheeverse/lychee-action@v1
+        with:
+          args: --no-progress --verbose pages/**/*.html
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
